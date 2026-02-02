@@ -1,0 +1,3736 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>英検準１級単語-Ver.1</title>
+<style>
+body { font-family: system-ui; margin:0; background:#f5f5f5; }
+header { background:#1e88e5; color:white; padding:14px; text-align:center; }
+.list { padding:10px; }
+.item {
+  background:white; margin-bottom:8px; padding:14px;
+  border-radius:10px; cursor:pointer;
+}
+.word { margin-bottom:8px; }
+.meaning { display:none; margin-top:6px; color:#333; }
+.learned { opacity:0.4; }
+button { margin-top:6px; }
+.back { color:white; cursor:pointer; font-size:14px; }
+.progress { font-size:12px; color:#666; margin-top:4px; }
+/* カテゴリ色分け */
+.A_basic, .A_phrase {
+  border-left: 6px solid #1e88e5 !important;
+}
+
+.B_important, .B_phrase {
+  border-left: 6px solid #43a047 !important;
+}
+
+.C_advanced {
+  border-left: 6px solid #fb8c00 !important;
+}
+/* 進捗率バー */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+/* セクション頁ヘッダー内の進捗表示を見やすく */
+header .progress {
+  color: #e3f2fd;   /* ほぼ白の水色 */
+}
+
+header .progress strong {
+  color: #ffffff;
+}
+
+/* 今日覚えた数 */
+header span#todayCount {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 例文表示用 */
+.example {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f0f4f8;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.example-en {
+  font-weight: 600;
+}
+
+.example-ja {
+  font-size: 13px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.example-btn {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+</style>
+</head>
+<body>
+
+<header id="header">英検準1級 単語学習</header>
+<div class="list" id="list"></div>
+
+<script>
+let currentSection = null;
+// let allWords = [];
+// fetchせずに直接JSONデータをJS配列として宣言
+
+// ############################
+//   単語帳データ定義【開始】
+// ############################
+let allWords =
+[
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "1",
+        "english": "last",
+        "品詞": "動詞",
+        "japanese": "続く、持続する",
+        "派生語": "lasting[形]長続きする、lastly[副]最後に",
+        "example_en": "The meeting lasted over three hours.",
+        "example_ja": "会議は3時間以上続いた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "2",
+        "english": "affect",
+        "品詞": "動詞",
+        "japanese": "に影響を与える、作用する",
+        "派生語": "effect[名]影響、effective[形]効果的な",
+        "example_en": "Climate change affects agriculture worldwide.",
+        "example_ja": "気候変動は世界の農業に影響を与える。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "3",
+        "english": "claim",
+        "品詞": "動詞",
+        "japanese": "と主張する、要求する",
+        "派生語": "claim[名]主張、claimant[名]請求者",
+        "example_en": "He claimed responsibility for the project.",
+        "example_ja": "彼はその計画の責任を主張した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "4",
+        "english": "ship",
+        "品詞": "動詞",
+        "japanese": "を輸送する、発送する",
+        "派生語": "shipment[名]輸送、shipping[名]配送",
+        "example_en": "The company ships products overseas daily.",
+        "example_ja": "その会社は毎日製品を海外に発送する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "5",
+        "english": "issue",
+        "品詞": "動詞",
+        "japanese": "を発行する、を出す",
+        "派生語": "issue[名]問題、発行",
+        "example_en": "The bank issued new credit cards.",
+        "example_ja": "銀行は新しいクレジットカードを発行した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "6",
+        "english": "purchase",
+        "品詞": "動詞",
+        "japanese": "を購入する",
+        "派生語": "purchase[名]購入、purchaser[名]購入者",
+        "example_en": "Customers can purchase tickets online.",
+        "example_ja": "客はオンラインでチケットを購入できる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "7",
+        "english": "occur",
+        "品詞": "動詞",
+        "japanese": "起こる、発生する",
+        "派生語": "occurrence[名]出来事",
+        "example_en": "The accident occurred late at night.",
+        "example_ja": "その事故は夜遅くに起こった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "8",
+        "english": "deal",
+        "品詞": "動詞",
+        "japanese": "対処する、扱う",
+        "派生語": "deal[名]取引、dealer[名]業者",
+        "example_en": "We must deal with this issue carefully.",
+        "example_ja": "私たちはこの問題に慎重に対処しなければならない。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "9",
+        "english": "consume",
+        "品詞": "動詞",
+        "japanese": "を消費する、を使い果たす",
+        "派生語": "consumption[名]消費、consumer[名]消費者",
+        "example_en": "This machine consumes less energy.",
+        "example_ja": "この機械はエネルギー消費が少ない。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "10",
+        "english": "present",
+        "品詞": "動詞",
+        "japanese": "を提示する、発表する",
+        "派生語": "present[名]贈り物、presentation[名]発表",
+        "example_en": "She presented her research findings clearly.",
+        "example_ja": "彼女は研究結果を明確に発表した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "11",
+        "english": "fire",
+        "品詞": "動詞",
+        "japanese": "を解雇する、発射する",
+        "派生語": "fire[名]火、解雇",
+        "example_en": "The company fired several workers yesterday.",
+        "example_ja": "会社は昨日数人の労働者を解雇した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "12",
+        "english": "regard",
+        "品詞": "動詞",
+        "japanese": "を〜と見なす",
+        "派生語": "regard[名]配慮、regarding[前]〜に関して",
+        "example_en": "I regard honesty as very important.",
+        "example_ja": "私は正直さを非常に重要だと考えている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "13",
+        "english": "fine",
+        "品詞": "動詞",
+        "japanese": "に罰金を科す",
+        "派生語": "fine[名]罰金、fine[形]素晴らしい",
+        "example_en": "The driver was fined for speeding.",
+        "example_ja": "その運転手はスピード違反で罰金を科された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "14",
+        "english": "transfer",
+        "品詞": "動詞",
+        "japanese": "を移す、移動させる",
+        "派生語": "transfer[名]移動、transmission[名]伝達",
+        "example_en": "Please transfer the data to this file.",
+        "example_ja": "このファイルにデータを移してください。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "15",
+        "english": "decline",
+        "品詞": "動詞",
+        "japanese": "減少する、断る",
+        "派生語": "decline[名]減少、declining[形]衰退している",
+        "example_en": "Sales declined sharply last year.",
+        "example_ja": "売上は昨年急激に減少した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "16",
+        "english": "eliminate",
+        "品詞": "動詞",
+        "japanese": "を取り除く、排除する",
+        "派生語": "elimination[名]除去、eliminator[名]排除者",
+        "example_en": "This method eliminates unnecessary steps.",
+        "example_ja": "この方法は不要な手順を取り除く。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "17",
+        "english": "indicate",
+        "品詞": "動詞",
+        "japanese": "を示す、指し示す",
+        "派生語": "indication[名]兆候、indicator[名]指標",
+        "example_en": "The data indicates a serious problem.",
+        "example_ja": "そのデータは深刻な問題を示している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "18",
+        "english": "ensure",
+        "品詞": "動詞",
+        "japanese": "を確実にする",
+        "派生語": "assurance[名]保証、ensuring[形]保証する",
+        "example_en": "Please ensure safety during the experiment.",
+        "example_ja": "実験中の安全を必ず確保してください。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "19",
+        "english": "expand",
+        "品詞": "動詞",
+        "japanese": "拡大する、広げる",
+        "派生語": "expansion[名]拡大、expansive[形]広がる",
+        "example_en": "The company plans to expand globally.",
+        "example_ja": "その会社は世界的に拡大する予定だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "20",
+        "english": "address",
+        "品詞": "動詞",
+        "japanese": "に取り組む、演説する",
+        "派生語": "address[名]演説、住所",
+        "example_en": "The government addressed environmental concerns.",
+        "example_ja": "政府は環境問題に取り組んだ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "21",
+        "english": "identify",
+        "品詞": "動詞",
+        "japanese": "を特定する、識別する",
+        "派生語": "identification[名]身分証明、identity[名]正体",
+        "example_en": "Police identified the suspect quickly.",
+        "example_ja": "警察は容疑者を素早く特定した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "22",
+        "english": "construct",
+        "品詞": "動詞",
+        "japanese": "を建設する、組み立てる",
+        "派生語": "construction[名]建設、constructive[形]建設的な",
+        "example_en": "The bridge was constructed last year.",
+        "example_ja": "その橋は昨年建設された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "23",
+        "english": "invest",
+        "品詞": "動詞",
+        "japanese": "投資する、（時間などを）注ぐ",
+        "派生語": "investment[名]投資、investor[名]投資家",
+        "example_en": "Many people invest in renewable energy.",
+        "example_ja": "多くの人が再生可能エネルギーに投資している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "24",
+        "english": "obtain",
+        "品詞": "動詞",
+        "japanese": "を得る、入手する",
+        "派生語": "obtainment[名]獲得、obtainable[形]入手可能な",
+        "example_en": "He obtained permission to travel abroad.",
+        "example_ja": "彼は海外渡航の許可を得た。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "25",
+        "english": "struggle",
+        "品詞": "動詞",
+        "japanese": "苦闘する、努力する",
+        "派生語": "struggle[名]闘争、struggling[形]苦戦している",
+        "example_en": "She struggled to balance work and family.",
+        "example_ja": "彼女は仕事と家庭の両立に苦労した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "26",
+        "english": "counter",
+        "品詞": "動詞",
+        "japanese": "に反論する、対抗する",
+        "派生語": "counter[名]反論、counteract[動]対抗する",
+        "example_en": "He countered the argument with facts.",
+        "example_ja": "彼は事実でその主張に反論した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "27",
+        "english": "associate",
+        "品詞": "動詞",
+        "japanese": "を結びつける、関連づける",
+        "派生語": "association[名]協会、associated[形]関連した",
+        "example_en": "I associate this song with childhood.",
+        "example_ja": "私はこの歌を子ども時代と結びつける。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "28",
+        "english": "register",
+        "品詞": "動詞",
+        "japanese": "登録する、記録する",
+        "派生語": "registration[名]登録、registered[形]登録された",
+        "example_en": "Please register online before attending.",
+        "example_ja": "参加前にオンラインで登録してください。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "29",
+        "english": "reveal",
+        "品詞": "動詞",
+        "japanese": "を明らかにする",
+        "派生語": "revelation[名]暴露、revealing[形]暴露的な",
+        "example_en": "The report revealed serious problems.",
+        "example_ja": "報告書は深刻な問題を明らかにした。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "30",
+        "english": "species",
+        "品詞": "名詞",
+        "japanese": "種（生物の分類）",
+        "派生語": "species[名]（単複同形）",
+        "example_en": "Many species are endangered.",
+        "example_ja": "多くの種が絶滅の危機にある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "31",
+        "english": "diet",
+        "品詞": "名詞",
+        "japanese": "食事、食生活",
+        "派生語": "dietary[形]食事の、dietician[名]栄養士",
+        "example_en": "A balanced diet is essential for health.",
+        "example_ja": "バランスの取れた食事は健康に不可欠だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "32",
+        "english": "site",
+        "品詞": "名詞",
+        "japanese": "場所、用地、サイト",
+        "派生語": "website[名]ウェブサイト",
+        "example_en": "The factory site was carefully chosen.",
+        "example_ja": "工場の用地は慎重に選ばれた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "33",
+        "english": "cell",
+        "品詞": "名詞",
+        "japanese": "細胞、独房",
+        "派生語": "cellular[形]細胞の",
+        "example_en": "The human body consists of many cells.",
+        "example_ja": "人体は多くの細胞から成る。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "34",
+        "english": "facility",
+        "品詞": "名詞",
+        "japanese": "施設、設備",
+        "派生語": "facilities[名]設備一式",
+        "example_en": "The school has modern sports facilities.",
+        "example_ja": "その学校には最新の体育施設がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "35",
+        "english": "practice",
+        "品詞": "名詞",
+        "japanese": "練習、実践",
+        "派生語": "practical[形]実用的な、practice[動]練習する",
+        "example_en": "Regular practice improves language skills.",
+        "example_ja": "定期的な練習は語学力を向上させる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "36",
+        "english": "resident",
+        "品詞": "名詞",
+        "japanese": "住民、居住者",
+        "派生語": "residential[形]住宅の",
+        "example_en": "Local residents opposed the plan.",
+        "example_ja": "地元住民はその計画に反対した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "37",
+        "english": "option",
+        "品詞": "名詞",
+        "japanese": "選択肢、選択",
+        "派生語": "option[動]選択する",
+        "example_en": "You have several options to choose from.",
+        "example_ja": "あなたにはいくつかの選択肢がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "38",
+        "english": "organ",
+        "品詞": "名詞",
+        "japanese": "臓器、器官",
+        "派生語": "organic[形]有機の、organism[名]生物",
+        "example_en": "The heart is a vital organ.",
+        "example_ja": "心臓は重要な臓器だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "39",
+        "english": "critic",
+        "品詞": "名詞",
+        "japanese": "批評家、批判者",
+        "派生語": "critical[形]批判的な、criticism[名]批判",
+        "example_en": "The critic praised the novel highly.",
+        "example_ja": "その批評家は小説を高く評価した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "40",
+        "english": "region",
+        "品詞": "名詞",
+        "japanese": "地域、地方",
+        "派生語": "regional[形]地域の",
+        "example_en": "This region is known for agriculture.",
+        "example_ja": "この地域は農業で知られている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "41",
+        "english": "tax",
+        "品詞": "名詞",
+        "japanese": "税金",
+        "派生語": "taxation[名]課税、taxpayer[名]納税者",
+        "example_en": "Higher taxes caused public dissatisfaction.",
+        "example_ja": "増税は国民の不満を招いた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "42",
+        "english": "access",
+        "品詞": "名詞",
+        "japanese": "利用、接近",
+        "派生語": "accessible[形]利用可能な",
+        "example_en": "Students have access to online resources.",
+        "example_ja": "学生はオンライン資料を利用できる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "43",
+        "english": "virus",
+        "品詞": "名詞",
+        "japanese": "ウイルス、感染症",
+        "派生語": "viral[形]ウイルス性の",
+        "example_en": "The virus spread rapidly worldwide.",
+        "example_ja": "そのウイルスは世界中に急速に広がった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "44",
+        "english": "bill",
+        "品詞": "名詞",
+        "japanese": "請求書、法案",
+        "派生語": "billing[名]請求",
+        "example_en": "The electricity bill increased this month.",
+        "example_ja": "今月は電気代が上がった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "45",
+        "english": "evidence",
+        "品詞": "名詞",
+        "japanese": "証拠",
+        "派生語": "evident[形]明らかな、evidently[副]明らかに",
+        "example_en": "There is no evidence to support the claim.",
+        "example_ja": "その主張を支持する証拠はない。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "46",
+        "english": "attempt",
+        "品詞": "名詞",
+        "japanese": "試み、企て",
+        "派生語": "attempt[動]試みる",
+        "example_en": "His attempt to escape failed.",
+        "example_ja": "彼の脱出の試みは失敗した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "47",
+        "english": "account",
+        "品詞": "名詞",
+        "japanese": "口座、説明",
+        "派生語": "accountable[形]責任のある",
+        "example_en": "I opened a new bank account.",
+        "example_ja": "私は新しい銀行口座を開いた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "48",
+        "english": "theory",
+        "品詞": "名詞",
+        "japanese": "理論",
+        "派生語": "theoretical[形]理論的な",
+        "example_en": "The theory explains human behavior.",
+        "example_ja": "その理論は人間の行動を説明する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "49",
+        "english": "factor",
+        "品詞": "名詞",
+        "japanese": "要因、要素",
+        "派生語": "factor[動]要因となる",
+        "example_en": "Cost is a major factor in decisions.",
+        "example_ja": "費用は意思決定の大きな要因だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "50",
+        "english": "stock",
+        "品詞": "名詞",
+        "japanese": "在庫、株式",
+        "派生語": "stock[動]蓄える",
+        "example_en": "The store ran out of stock.",
+        "example_ja": "その店は在庫切れになった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "51",
+        "english": "chemical",
+        "品詞": "名詞",
+        "japanese": "化学物質",
+        "派生語": "chemical[形]化学の",
+        "example_en": "Chemicals were stored safely.",
+        "example_ja": "化学物質は安全に保管された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "52",
+        "english": "media",
+        "品詞": "名詞",
+        "japanese": "媒体、マスメディア",
+        "派生語": "medium[名]媒体",
+        "example_en": "Social media influences public opinion.",
+        "example_ja": "ソーシャルメディアは世論に影響する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "53",
+        "english": "income",
+        "品詞": "名詞",
+        "japanese": "収入",
+        "派生語": "income[形]収入の",
+        "example_en": "His income increased last year.",
+        "example_ja": "彼の収入は昨年増えた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "54",
+        "english": "supply",
+        "品詞": "名詞",
+        "japanese": "供給",
+        "派生語": "supply[動]供給する",
+        "example_en": "The water supply was interrupted.",
+        "example_ja": "水の供給が中断された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "55",
+        "english": "shortage",
+        "品詞": "名詞",
+        "japanese": "不足",
+        "派生語": "short[形]不足した",
+        "example_en": "There is a shortage of nurses.",
+        "example_ja": "看護師が不足している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "56",
+        "english": "poverty",
+        "品詞": "名詞",
+        "japanese": "貧困",
+        "派生語": "poor[形]貧しい",
+        "example_en": "Poverty remains a global issue.",
+        "example_ja": "貧困は依然として世界的問題だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "57",
+        "english": "criminal",
+        "品詞": "名詞",
+        "japanese": "犯罪者",
+        "派生語": "crime[名]犯罪",
+        "example_en": "The criminal was arrested quickly.",
+        "example_ja": "その犯罪者はすぐに逮捕された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "58",
+        "english": "budget",
+        "品詞": "名詞",
+        "japanese": "予算",
+        "派生語": "budget[動]予算を組む",
+        "example_en": "The project exceeded its budget.",
+        "example_ja": "その計画は予算を超過した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "59",
+        "english": "authority",
+        "品詞": "名詞",
+        "japanese": "権威、権限",
+        "派生語": "authoritative[形]権威ある",
+        "example_en": "The authority approved the plan.",
+        "example_ja": "当局はその計画を承認した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "60",
+        "english": "genome",
+        "品詞": "名詞",
+        "japanese": "ゲノム",
+        "派生語": "genetic[形]遺伝の",
+        "example_en": "The human genome was decoded.",
+        "example_ja": "ヒトゲノムは解読された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "61",
+        "english": "atmosphere",
+        "品詞": "名詞",
+        "japanese": "大気、雰囲気",
+        "派生語": "atmospheric[形]大気の",
+        "example_en": "The atmosphere was tense.",
+        "example_ja": "その場の雰囲気は緊張していた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "62",
+        "english": "aid",
+        "品詞": "名詞",
+        "japanese": "援助、助け",
+        "派生語": "aid[動]援助する",
+        "example_en": "Humanitarian aid saved many lives.",
+        "example_ja": "人道支援は多くの命を救った。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "63",
+        "english": "measure",
+        "品詞": "名詞",
+        "japanese": "措置、測定",
+        "派生語": "measure[動]測る",
+        "example_en": "New measures were introduced.",
+        "example_ja": "新たな対策が導入された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "64",
+        "english": "subject",
+        "品詞": "名詞",
+        "japanese": "主題、科目",
+        "派生語": "subject[形]〜次第で",
+        "example_en": "The subject interests many students.",
+        "example_ja": "その科目は多くの学生の関心を引く。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "65",
+        "english": "decade",
+        "品詞": "名詞",
+        "japanese": "10年間",
+        "派生語": "decadal[形]10年ごとの",
+        "example_en": "The city changed over the decade.",
+        "example_ja": "その都市は10年で変化した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "66",
+        "english": "weapon",
+        "品詞": "名詞",
+        "japanese": "武器",
+        "派生語": "weaponry[名]兵器",
+        "example_en": "Weapons were strictly controlled.",
+        "example_ja": "武器は厳しく管理された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "67",
+        "english": "nutrient",
+        "品詞": "名詞",
+        "japanese": "栄養素",
+        "派生語": "nutritional[形]栄養の",
+        "example_en": "Nutrients are essential for growth.",
+        "example_ja": "栄養素は成長に不可欠だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "68",
+        "english": "expense",
+        "品詞": "名詞",
+        "japanese": "費用",
+        "派生語": "expensive[形]高価な",
+        "example_en": "Travel expenses increased significantly.",
+        "example_ja": "旅行費用は大幅に増えた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "69",
+        "english": "structure",
+        "品詞": "名詞",
+        "japanese": "構造、建造物",
+        "派生語": "structural[形]構造の",
+        "example_en": "The structure of the building is unique.",
+        "example_ja": "その建物の構造は独特だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "70",
+        "english": "adolescent",
+        "品詞": "名詞",
+        "japanese": "思春期の若者",
+        "派生語": "adolescence[名]思春期",
+        "example_en": "Adolescents need emotional support.",
+        "example_ja": "思春期の若者には精神的支援が必要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "71",
+        "english": "procedure",
+        "品詞": "名詞",
+        "japanese": "手順、処置",
+        "派生語": "procedural[形]手続きの",
+        "example_en": "The procedure takes several steps.",
+        "example_ja": "その手順はいくつかの段階がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "72",
+        "english": "minimum",
+        "品詞": "名詞",
+        "japanese": "最小限",
+        "派生語": "minimal[形]最小の",
+        "example_en": "The minimum age is eighteen.",
+        "example_ja": "最低年齢は18歳だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "73",
+        "english": "fuel",
+        "品詞": "名詞",
+        "japanese": "燃料",
+        "派生語": "fuel[動]燃料を供給する",
+        "example_en": "Fuel prices rose sharply.",
+        "example_ja": "燃料価格が急騰した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "74",
+        "english": "resource",
+        "品詞": "名詞",
+        "japanese": "資源",
+        "派生語": "resourceful[形]機知に富む",
+        "example_en": "Natural resources must be protected.",
+        "example_ja": "天然資源は守らねばならない。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "75",
+        "english": "regulation",
+        "品詞": "名詞",
+        "japanese": "規制、規則",
+        "派生語": "regulate[動]規制する",
+        "example_en": "New regulations were enforced.",
+        "example_ja": "新しい規制が施行された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "76",
+        "english": "contact",
+        "品詞": "名詞",
+        "japanese": "連絡、接触",
+        "派生語": "contact[動]連絡する",
+        "example_en": "Please keep contact with your advisor.",
+        "example_ja": "指導教員と連絡を保ちなさい。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "77",
+        "english": "insurance",
+        "品詞": "名詞",
+        "japanese": "保険",
+        "派生語": "insure[動]保険をかける",
+        "example_en": "Health insurance is mandatory here.",
+        "example_ja": "ここでは健康保険が義務だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "78",
+        "english": "employment",
+        "品詞": "名詞",
+        "japanese": "雇用",
+        "派生語": "employ[動]雇う",
+        "example_en": "Employment opportunities are increasing.",
+        "example_ja": "雇用機会は増えている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "79",
+        "english": "ban",
+        "品詞": "名詞",
+        "japanese": "禁止",
+        "派生語": "ban[動]禁止する",
+        "example_en": "The ban was lifted recently.",
+        "example_ja": "その禁止は最近解除された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "80",
+        "english": "vehicle",
+        "品詞": "名詞",
+        "japanese": "車両、乗り物",
+        "派生語": "vehicular[形]車両の",
+        "example_en": "Electric vehicles are becoming popular.",
+        "example_ja": "電気自動車が人気になっている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "81",
+        "english": "soil",
+        "品詞": "名詞",
+        "japanese": "土壌、土",
+        "派生語": "soil[動]汚す",
+        "example_en": "Soil quality affects crops.",
+        "example_ja": "土壌の質は作物に影響する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "82",
+        "english": "cargo",
+        "品詞": "名詞",
+        "japanese": "積荷",
+        "派生語": "cargo[形]貨物の",
+        "example_en": "The cargo arrived safely.",
+        "example_ja": "積荷は無事に到着した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "83",
+        "english": "aircraft",
+        "品詞": "名詞",
+        "japanese": "航空機",
+        "派生語": "aircraft[名]（単複同形）",
+        "example_en": "The aircraft landed safely.",
+        "example_ja": "航空機は安全に着陸した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "84",
+        "english": "current",
+        "品詞": "形容詞",
+        "japanese": "現在の、最新の",
+        "派生語": "currently[副]現在",
+        "example_en": "The current situation is serious.",
+        "example_ja": "現在の状況は深刻だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "85",
+        "english": "political",
+        "品詞": "形容詞",
+        "japanese": "政治の",
+        "派生語": "politics[名]政治",
+        "example_en": "Political tension is rising.",
+        "example_ja": "政治的緊張が高まっている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "86",
+        "english": "significant",
+        "品詞": "形容詞",
+        "japanese": "重要な、著しい",
+        "派生語": "significance[名]重要性",
+        "example_en": "The results were statistically significant.",
+        "example_ja": "結果は統計的に有意だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "87",
+        "english": "effective",
+        "品詞": "形容詞",
+        "japanese": "効果的な",
+        "派生語": "effectively[副]効果的に",
+        "example_en": "This method is highly effective.",
+        "example_ja": "この方法は非常に効果的だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "88",
+        "english": "military",
+        "品詞": "形容詞",
+        "japanese": "軍事の",
+        "派生語": "military[名]軍",
+        "example_en": "The country increased military spending.",
+        "example_ja": "その国は軍事費を増やした。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "89",
+        "english": "due",
+        "品詞": "形容詞",
+        "japanese": "期限の、当然の",
+        "派生語": "due to[前]〜のため",
+        "example_en": "The report is due tomorrow.",
+        "example_ja": "報告書は明日が期限だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "90",
+        "english": "essential",
+        "品詞": "形容詞",
+        "japanese": "不可欠な",
+        "派生語": "essentially[副]本質的に",
+        "example_en": "Clean water is essential for life.",
+        "example_ja": "清潔な水は生命に不可欠だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "91",
+        "english": "illegal",
+        "品詞": "形容詞",
+        "japanese": "違法の",
+        "派生語": "legally[副]合法的に",
+        "example_en": "It is illegal to dump waste here.",
+        "example_ja": "ここで廃棄物を捨てるのは違法だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "92",
+        "english": "immune",
+        "品詞": "形容詞",
+        "japanese": "免疫の、影響を受けない",
+        "派生語": "immunity[名]免疫",
+        "example_en": "Some people are immune to the virus.",
+        "example_ja": "一部の人はそのウイルスに免疫がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "93",
+        "english": "numerous",
+        "品詞": "形容詞",
+        "japanese": "多数の",
+        "派生語": "numerously[副]多数で",
+        "example_en": "Numerous studies support this theory.",
+        "example_ja": "多くの研究がこの理論を支持している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "94",
+        "english": "extreme",
+        "品詞": "形容詞",
+        "japanese": "極端な、過激な",
+        "派生語": "extremely[副]非常に",
+        "example_en": "Extreme weather is increasing globally.",
+        "example_ja": "極端な気象が世界的に増えている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "95",
+        "english": "general",
+        "品詞": "形容詞",
+        "japanese": "一般的な、全体の",
+        "派生語": "generally[副]一般的に",
+        "example_en": "This rule applies in general.",
+        "example_ja": "この規則は一般に適用される。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "96",
+        "english": "agricultural",
+        "品詞": "形容詞",
+        "japanese": "農業の",
+        "派生語": "agriculture[名]農業",
+        "example_en": "Agricultural production declined.",
+        "example_ja": "農業生産は減少した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "97",
+        "english": "overall",
+        "品詞": "形容詞",
+        "japanese": "全体的な",
+        "派生語": "overall[副]全体として",
+        "example_en": "The overall performance improved.",
+        "example_ja": "全体的な成績は向上した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "98",
+        "english": "additional",
+        "品詞": "形容詞",
+        "japanese": "追加の",
+        "派生語": "additionally[副]さらに",
+        "example_en": "Additional funding is required.",
+        "example_ja": "追加の資金が必要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "99",
+        "english": "entire",
+        "品詞": "形容詞",
+        "japanese": "全体の、完全な",
+        "派生語": "entirely[副]完全に",
+        "example_en": "The entire system failed.",
+        "example_ja": "システム全体が故障した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "1",
+        "no": "100",
+        "english": "severe",
+        "品詞": "形容詞",
+        "japanese": "深刻な、厳しい",
+        "派生語": "severely[副]深刻に",
+        "example_en": "The area suffered severe damage.",
+        "example_ja": "その地域は深刻な被害を受けた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "101",
+        "english": "alter",
+        "品詞": "動詞",
+        "japanese": "を変更する、改める",
+        "派生語": "alteration[名]変更、alternative[名]代案",
+        "example_en": "The plan was altered slightly.",
+        "example_ja": "計画は少し変更された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "102",
+        "english": "adopt",
+        "品詞": "動詞",
+        "japanese": "を採用する、（子を）養子にする",
+        "派生語": "adoption[名]採用",
+        "example_en": "The company adopted a new policy.",
+        "example_ja": "会社は新しい方針を採用した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "103",
+        "english": "vote",
+        "品詞": "動詞",
+        "japanese": "投票する、意見を表す",
+        "派生語": "vote[名]投票、voter[名]有権者",
+        "example_en": "Many citizens voted in the election.",
+        "example_ja": "多くの市民が選挙で投票した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "104",
+        "english": "determine",
+        "品詞": "動詞",
+        "japanese": "を決定する、を判断する",
+        "派生語": "determination[名]決意",
+        "example_en": "The test will determine your level.",
+        "example_ja": "テストがあなたのレベルを決める。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "105",
+        "english": "enable",
+        "品詞": "動詞",
+        "japanese": "を可能にする",
+        "派生語": "ability[名]能力、enablement[名]実現",
+        "example_en": "This system enables remote work.",
+        "example_ja": "この制度は在宅勤務を可能にする。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "106",
+        "english": "conduct",
+        "品詞": "動詞",
+        "japanese": "を実施する、を行う",
+        "派生語": "conduct[名]行為、conductor[名]指揮者",
+        "example_en": "The survey was conducted online.",
+        "example_ja": "調査はオンラインで実施された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "107",
+        "english": "direct",
+        "品詞": "動詞",
+        "japanese": "を指示する、監督する",
+        "派生語": "direction[名]方向、director[名]監督",
+        "example_en": "She directed the research project.",
+        "example_ja": "彼女は研究計画を指揮した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "108",
+        "english": "absorb",
+        "品詞": "動詞",
+        "japanese": "を吸収する、理解する",
+        "派生語": "absorption[名]吸収",
+        "example_en": "The sponge absorbs water quickly.",
+        "example_ja": "そのスポンジは水を素早く吸収する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "109",
+        "english": "imply",
+        "品詞": "動詞",
+        "japanese": "をほのめかす、暗示する",
+        "派生語": "implication[名]含意",
+        "example_en": "His words implied a hidden meaning.",
+        "example_ja": "彼の言葉は隠れた意味を暗示した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "110",
+        "english": "operate",
+        "品詞": "動詞",
+        "japanese": "を操作する、作動する",
+        "派生語": "operation[名]操作、operational[形]稼働中の",
+        "example_en": "She operates heavy machinery.",
+        "example_ja": "彼女は重機を操作する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "111",
+        "english": "demonstrate",
+        "品詞": "動詞",
+        "japanese": "を実演する、を示す",
+        "派生語": "demonstration[名]実演",
+        "example_en": "The teacher demonstrated the experiment.",
+        "example_ja": "教師は実験を実演した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "112",
+        "english": "boost",
+        "品詞": "動詞",
+        "japanese": "を高める、促進する",
+        "派生語": "boost[名]増加",
+        "example_en": "This campaign boosted sales greatly.",
+        "example_ja": "このキャンペーンは売上を大きく伸ばした。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "113",
+        "english": "prove",
+        "品詞": "動詞",
+        "japanese": "を証明する、判明する",
+        "派生語": "proof[名]証拠",
+        "example_en": "The theory was proven correct.",
+        "example_ja": "その理論は正しいと証明された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "114",
+        "english": "monitor",
+        "品詞": "動詞",
+        "japanese": "を監視する、見守る",
+        "派生語": "monitor[名]監視装置",
+        "example_en": "Doctors monitored the patient closely.",
+        "example_ja": "医師は患者を注意深く監視した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "115",
+        "english": "defeat",
+        "品詞": "動詞",
+        "japanese": "を打ち負かす",
+        "派生語": "defeat[名]敗北",
+        "example_en": "The team defeated their rivals.",
+        "example_ja": "そのチームはライバルを打ち負かした。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "116",
+        "english": "protest",
+        "品詞": "動詞",
+        "japanese": "抗議する",
+        "派生語": "protest[名]抗議",
+        "example_en": "Demonstrators protested peacefully.",
+        "example_ja": "デモ参加者は平和的に抗議した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "117",
+        "english": "target",
+        "品詞": "動詞",
+        "japanese": "を標的にする",
+        "派生語": "target[名]標的",
+        "example_en": "The policy targets young workers.",
+        "example_ja": "その政策は若年労働者を対象にしている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "118",
+        "english": "preserve",
+        "品詞": "動詞",
+        "japanese": "を保存する、守る",
+        "派生語": "preservation[名]保存",
+        "example_en": "This effort preserves cultural heritage.",
+        "example_ja": "この取り組みは文化遺産を守る。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "119",
+        "english": "oppose",
+        "品詞": "動詞",
+        "japanese": "に反対する",
+        "派生語": "opposition[名]反対",
+        "example_en": "Many citizens opposed the law.",
+        "example_ja": "多くの市民がその法律に反対した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "120",
+        "english": "migrate",
+        "品詞": "動詞",
+        "japanese": "移住する、移動する",
+        "派生語": "migration[名]移住",
+        "example_en": "Birds migrate every winter.",
+        "example_ja": "鳥は毎年冬に渡りをする。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "121",
+        "english": "analyze",
+        "品詞": "動詞",
+        "japanese": "を分析する",
+        "派生語": "analysis[名]分析",
+        "example_en": "Scientists analyzed the data carefully.",
+        "example_ja": "科学者たちはデータを慎重に分析した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "122",
+        "english": "discourage",
+        "品詞": "動詞",
+        "japanese": "を思いとどまらせる",
+        "派生語": "discouragement[名]落胆",
+        "example_en": "High costs discourage participation.",
+        "example_ja": "高い費用が参加を妨げる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "123",
+        "english": "confirm",
+        "品詞": "動詞",
+        "japanese": "を確認する、裏付ける",
+        "派生語": "confirmation[名]確認",
+        "example_en": "The test confirmed the diagnosis.",
+        "example_ja": "検査は診断を裏付けた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "124",
+        "english": "intend",
+        "品詞": "動詞",
+        "japanese": "意図する、つもりである",
+        "派生語": "intention[名]意図",
+        "example_en": "I intend to study abroad.",
+        "example_ja": "私は留学するつもりだ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "125",
+        "english": "predict",
+        "品詞": "動詞",
+        "japanese": "を予測する",
+        "派生語": "prediction[名]予測",
+        "example_en": "Experts predict economic recovery.",
+        "example_ja": "専門家は景気回復を予測している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "126",
+        "english": "extend",
+        "品詞": "動詞",
+        "japanese": "を延ばす、拡張する",
+        "派生語": "extension[名]延長",
+        "example_en": "The deadline was extended.",
+        "example_ja": "締め切りが延長された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "127",
+        "english": "figure",
+        "品詞": "名詞",
+        "japanese": "数字、人物、図",
+        "派生語": "figure[動]理解する",
+        "example_en": "The figure shows population growth.",
+        "example_ja": "その図は人口増加を示している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "128",
+        "english": "transportation",
+        "品詞": "名詞",
+        "japanese": "交通、輸送",
+        "派生語": "transport[動]輸送する",
+        "example_en": "Public transportation is convenient.",
+        "example_ja": "公共交通は便利だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "129",
+        "english": "institution",
+        "品詞": "名詞",
+        "japanese": "機関、制度",
+        "派生語": "institutional[形]制度の",
+        "example_en": "The university is a major institution.",
+        "example_ja": "その大学は主要な機関だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "130",
+        "english": "theft",
+        "品詞": "名詞",
+        "japanese": "盗難",
+        "派生語": "steal[動]盗む",
+        "example_en": "The theft was reported immediately.",
+        "example_ja": "盗難はすぐに届け出られた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "131",
+        "english": "candidate",
+        "品詞": "名詞",
+        "japanese": "候補者",
+        "派生語": "candidacy[名]立候補",
+        "example_en": "She became a strong candidate.",
+        "example_ja": "彼女は有力な候補者になった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "132",
+        "english": "mammal",
+        "品詞": "名詞",
+        "japanese": "哺乳類",
+        "派生語": "mammalian[形]哺乳類の",
+        "example_en": "Humans are mammals.",
+        "example_ja": "人間は哺乳類だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "133",
+        "english": "economist",
+        "品詞": "名詞",
+        "japanese": "経済学者",
+        "派生語": "economics[名]経済学",
+        "example_en": "The economist analyzed inflation.",
+        "example_ja": "その経済学者はインフレを分析した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "134",
+        "english": "protein",
+        "品詞": "名詞",
+        "japanese": "たんぱく質",
+        "派生語": "protein[形]たんぱく質の",
+        "example_en": "Protein is essential for muscles.",
+        "example_ja": "たんぱく質は筋肉に不可欠だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "135",
+        "english": "immigrant",
+        "品詞": "名詞",
+        "japanese": "移民",
+        "派生語": "immigrate[動]移住する",
+        "example_en": "Immigrants contribute to society.",
+        "example_ja": "移民は社会に貢献している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "136",
+        "english": "property",
+        "品詞": "名詞",
+        "japanese": "財産、特性",
+        "派生語": "proprietary[形]所有の",
+        "example_en": "The property was sold recently.",
+        "example_ja": "その不動産は最近売却された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "137",
+        "english": "fund",
+        "品詞": "名詞",
+        "japanese": "資金",
+        "派生語": "fund[動]資金提供する",
+        "example_en": "The fund supports research.",
+        "example_ja": "その基金は研究を支援している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "138",
+        "english": "habitat",
+        "品詞": "名詞",
+        "japanese": "生息地、居住環境",
+        "派生語": "habitat[形]生息地の",
+        "example_en": "The forest is their natural habitat.",
+        "example_ja": "その森は彼らの自然の生息地だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "139",
+        "english": "symptom",
+        "品詞": "名詞",
+        "japanese": "症状",
+        "派生語": "symptomatic[形]症状の",
+        "example_en": "Fever is a common symptom.",
+        "example_ja": "発熱は一般的な症状だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "140",
+        "english": "eruption",
+        "品詞": "名詞",
+        "japanese": "噴火、噴出",
+        "派生語": "erupt[動]噴火する",
+        "example_en": "The volcano erupted suddenly.",
+        "example_ja": "火山が突然噴火した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "141",
+        "english": "quantity",
+        "品詞": "名詞",
+        "japanese": "量、分量",
+        "派生語": "quantitative[形]量の",
+        "example_en": "The quantity of waste increased.",
+        "example_ja": "廃棄物の量が増えた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "142",
+        "english": "ad",
+        "品詞": "名詞",
+        "japanese": "広告",
+        "派生語": "advertise[動]宣伝する",
+        "example_en": "I saw an ad online.",
+        "example_ja": "オンラインで広告を見た。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "143",
+        "english": "saving",
+        "品詞": "名詞",
+        "japanese": "節約、貯蓄",
+        "派生語": "save[動]節約する",
+        "example_en": "Savings are important for emergencies.",
+        "example_ja": "貯蓄は緊急時に重要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "144",
+        "english": "territory",
+        "品詞": "名詞",
+        "japanese": "領土、区域",
+        "派生語": "territorial[形]領土の",
+        "example_en": "The animals defend their territory.",
+        "example_ja": "動物は自分の縄張りを守る。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "145",
+        "english": "threat",
+        "品詞": "名詞",
+        "japanese": "脅威、恐れ",
+        "派生語": "threaten[動]脅す",
+        "example_en": "Cyber attacks pose a threat.",
+        "example_ja": "サイバー攻撃は脅威となる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "146",
+        "english": "sufferer",
+        "品詞": "名詞",
+        "japanese": "被害者、患者",
+        "派生語": "suffer[動]苦しむ",
+        "example_en": "Many sufferers need support.",
+        "example_ja": "多くの患者が支援を必要としている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "147",
+        "english": "emission",
+        "品詞": "名詞",
+        "japanese": "排出、放出",
+        "派生語": "emit[動]排出する",
+        "example_en": "Carbon emissions increased worldwide.",
+        "example_ja": "炭素排出量は世界的に増えた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "148",
+        "english": "executive",
+        "品詞": "名詞",
+        "japanese": "幹部、経営者",
+        "派生語": "execute[動]実行する",
+        "example_en": "The executive approved the plan.",
+        "example_ja": "幹部は計画を承認した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "149",
+        "english": "strategy",
+        "品詞": "名詞",
+        "japanese": "戦略",
+        "派生語": "strategic[形]戦略的な",
+        "example_en": "A new strategy was introduced.",
+        "example_ja": "新しい戦略が導入された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "150",
+        "english": "riot",
+        "品詞": "名詞",
+        "japanese": "暴動",
+        "派生語": "riot[動]暴動を起こす",
+        "example_en": "Riots broke out overnight.",
+        "example_ja": "一夜にして暴動が起きた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "151",
+        "english": "district",
+        "品詞": "名詞",
+        "japanese": "地区、行政区",
+        "派生語": "district[形]地区の",
+        "example_en": "The school district expanded.",
+        "example_ja": "学区が拡大した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "152",
+        "english": "election",
+        "品詞": "名詞",
+        "japanese": "選挙",
+        "派生語": "elect[動]選ぶ",
+        "example_en": "The election results shocked voters.",
+        "example_ja": "選挙結果は有権者を驚かせた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "153",
+        "english": "medication",
+        "品詞": "名詞",
+        "japanese": "薬、投薬",
+        "派生語": "medicate[動]投薬する",
+        "example_en": "The medication relieved pain.",
+        "example_ja": "その薬は痛みを和らげた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "154",
+        "english": "breed",
+        "品詞": "名詞",
+        "japanese": "品種、種類",
+        "派生語": "breed[動]繁殖する",
+        "example_en": "This dog breed is rare.",
+        "example_ja": "この犬種は珍しい。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "155",
+        "english": "conflict",
+        "品詞": "名詞",
+        "japanese": "対立、衝突",
+        "派生語": "conflict[動]衝突する",
+        "example_en": "The conflict lasted years.",
+        "example_ja": "その対立は何年も続いた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "156",
+        "english": "productivity",
+        "品詞": "名詞",
+        "japanese": "生産性",
+        "派生語": "productive[形]生産的な",
+        "example_en": "Productivity improved after training.",
+        "example_ja": "研修後、生産性が向上した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "157",
+        "english": "organism",
+        "品詞": "名詞",
+        "japanese": "生物、生体",
+        "派生語": "organic[形]有機の",
+        "example_en": "The organism adapts to change.",
+        "example_ja": "その生物は変化に適応する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "158",
+        "english": "representative",
+        "品詞": "名詞",
+        "japanese": "代表者",
+        "派生語": "represent[動]代表する",
+        "example_en": "The representative spoke clearly.",
+        "example_ja": "代表者は明確に発言した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "159",
+        "english": "warehouse",
+        "品詞": "名詞",
+        "japanese": "倉庫",
+        "派生語": "warehouse[動]保管する",
+        "example_en": "Goods are stored in the warehouse.",
+        "example_ja": "商品は倉庫に保管されている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "160",
+        "english": "refund",
+        "品詞": "名詞",
+        "japanese": "返金",
+        "派生語": "refund[動]返金する",
+        "example_en": "I received a full refund.",
+        "example_ja": "全額返金を受けた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "161",
+        "english": "tuition",
+        "品詞": "名詞",
+        "japanese": "授業料",
+        "派生語": "tuition[形]授業料の",
+        "example_en": "Tuition fees increased this year.",
+        "example_ja": "今年は授業料が上がった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "162",
+        "english": "range",
+        "品詞": "名詞",
+        "japanese": "範囲、多様性",
+        "派生語": "range[動]及ぶ",
+        "example_en": "The age range is wide.",
+        "example_ja": "年齢の幅は広い。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "163",
+        "english": "victim",
+        "品詞": "名詞",
+        "japanese": "犠牲者",
+        "派生語": "victimize[動]被害を与える",
+        "example_en": "The victim reported the crime.",
+        "example_ja": "被害者は犯罪を届け出た。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "164",
+        "english": "dose",
+        "品詞": "名詞",
+        "japanese": "投与量、量",
+        "派生語": "dose[動]投与する",
+        "example_en": "The doctor adjusted the dose.",
+        "example_ja": "医師は投与量を調整した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "165",
+        "english": "mainland",
+        "品詞": "名詞",
+        "japanese": "本土",
+        "派生語": "mainland[形]本土の",
+        "example_en": "Flights connect the island to the mainland.",
+        "example_ja": "便は島と本土を結んでいる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "166",
+        "english": "waterfall",
+        "品詞": "名詞",
+        "japanese": "滝",
+        "派生語": "waterfall[形]滝の",
+        "example_en": "The waterfall attracts tourists.",
+        "example_ja": "その滝は観光客を引きつける。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "167",
+        "english": "satellite",
+        "品詞": "名詞",
+        "japanese": "人工衛星",
+        "派生語": "satellite[形]衛星の",
+        "example_en": "The satellite collects weather data.",
+        "example_ja": "人工衛星は気象データを集める。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "168",
+        "english": "evolution",
+        "品詞": "名詞",
+        "japanese": "進化",
+        "派生語": "evolve[動]進化する",
+        "example_en": "Evolution explains biological diversity.",
+        "example_ja": "進化は生物多様性を説明する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "169",
+        "english": "prey",
+        "品詞": "名詞",
+        "japanese": "獲物",
+        "派生語": "prey[動]捕食する",
+        "example_en": "Lions hunt prey in groups.",
+        "example_ja": "ライオンは群れで獲物を狩る。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "170",
+        "english": "bystander",
+        "品詞": "名詞",
+        "japanese": "傍観者",
+        "派生語": "stand by[句]傍観する",
+        "example_en": "Bystanders witnessed the accident.",
+        "example_ja": "傍観者が事故を目撃した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "171",
+        "english": "creature",
+        "品詞": "名詞",
+        "japanese": "生き物、創造物",
+        "派生語": "create[動]創造する",
+        "example_en": "The deep sea has strange creatures.",
+        "example_ja": "深海には奇妙な生物がいる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "172",
+        "english": "civilization",
+        "品詞": "名詞",
+        "japanese": "文明",
+        "派生語": "civilized[形]文明化した",
+        "example_en": "Ancient civilizations left ruins.",
+        "example_ja": "古代文明は遺跡を残した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "173",
+        "english": "tribe",
+        "品詞": "名詞",
+        "japanese": "部族、種族",
+        "派生語": "tribal[形]部族の",
+        "example_en": "The tribe preserves traditions.",
+        "example_ja": "その部族は伝統を守っている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "174",
+        "english": "permission",
+        "品詞": "名詞",
+        "japanese": "許可",
+        "派生語": "permit[動]許可する",
+        "example_en": "Permission is required to enter.",
+        "example_ja": "入場には許可が必要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "175",
+        "english": "barrier",
+        "品詞": "名詞",
+        "japanese": "障壁、妨げ",
+        "派生語": "barrier[形]障壁の",
+        "example_en": "Language is often a barrier.",
+        "example_ja": "言語はしばしば障壁となる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "176",
+        "english": "wage",
+        "品詞": "名詞",
+        "japanese": "賃金",
+        "派生語": "wage[動]賃金を払う",
+        "example_en": "Wages increased after negotiations.",
+        "example_ja": "交渉後に賃金が上がった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "177",
+        "english": "drone",
+        "品詞": "名詞",
+        "japanese": "無人機、ドローン",
+        "派生語": "drone[動]低く唸る",
+        "example_en": "Drones are used for delivery.",
+        "example_ja": "ドローンは配達に使われている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "178",
+        "english": "appearance",
+        "品詞": "名詞",
+        "japanese": "外見、出現",
+        "派生語": "appear[動]現れる",
+        "example_en": "His appearance surprised everyone.",
+        "example_ja": "彼の登場は皆を驚かせた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "179",
+        "english": "embassy",
+        "品詞": "名詞",
+        "japanese": "大使館",
+        "派生語": "embassy[形]大使館の",
+        "example_en": "The embassy issued a warning.",
+        "example_ja": "大使館は警告を出した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "180",
+        "english": "skeleton",
+        "品詞": "名詞",
+        "japanese": "骨格、骨組み",
+        "派生語": "skeletal[形]骨格の",
+        "example_en": "The skeleton was displayed in museum.",
+        "example_ja": "その骨格は博物館に展示された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "181",
+        "english": "wildlife",
+        "品詞": "名詞",
+        "japanese": "野生生物",
+        "派生語": "wild[形]野生の",
+        "example_en": "Wildlife conservation is essential.",
+        "example_ja": "野生生物の保護は不可欠だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "182",
+        "english": "potential",
+        "品詞": "形容詞",
+        "japanese": "潜在的な、可能性のある",
+        "派生語": "potentially[副]潜在的に",
+        "example_en": "She has great potential as leader.",
+        "example_ja": "彼女は指導者として大きな可能性がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "183",
+        "english": "limited",
+        "品詞": "形容詞",
+        "japanese": "限られた、限定的な",
+        "派生語": "limit[動]制限する",
+        "example_en": "Resources are limited here.",
+        "example_ja": "ここでは資源が限られている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "184",
+        "english": "rural",
+        "品詞": "形容詞",
+        "japanese": "田舎の、農村の",
+        "派生語": "rural[名]農村部",
+        "example_en": "Rural areas face population decline.",
+        "example_ja": "農村地域は人口減少に直面している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "185",
+        "english": "advanced",
+        "品詞": "形容詞",
+        "japanese": "高度な、進んだ",
+        "派生語": "advance[動]進歩する",
+        "example_en": "Advanced technology changed society.",
+        "example_ja": "高度な技術が社会を変えた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "186",
+        "english": "beneficial",
+        "品詞": "形容詞",
+        "japanese": "有益な、ためになる",
+        "派生語": "benefit[名]利益",
+        "example_en": "Exercise is beneficial to health.",
+        "example_ja": "運動は健康に有益だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "187",
+        "english": "genetic",
+        "品詞": "形容詞",
+        "japanese": "遺伝の",
+        "派生語": "genetics[名]遺伝学",
+        "example_en": "Genetic factors influence disease.",
+        "example_ja": "遺伝的要因が病気に影響する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "188",
+        "english": "radical",
+        "品詞": "形容詞",
+        "japanese": "急進的な、根本的な",
+        "派生語": "radically[副]根本的に",
+        "example_en": "Radical reforms were proposed.",
+        "example_ja": "急進的な改革が提案された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "189",
+        "english": "hostile",
+        "品詞": "形容詞",
+        "japanese": "敵対的な",
+        "派生語": "hostility[名]敵意",
+        "example_en": "The crowd became hostile.",
+        "example_ja": "群衆は敵対的になった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "190",
+        "english": "fit",
+        "品詞": "形容詞",
+        "japanese": "適した、健康な",
+        "派生語": "fitness[名]健康",
+        "example_en": "This job is fit for her skills.",
+        "example_ja": "この仕事は彼女の技能に合っている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "191",
+        "english": "long-term",
+        "品詞": "形容詞",
+        "japanese": "長期的な",
+        "派生語": "long-term[副]長期的に",
+        "example_en": "Long-term planning is necessary.",
+        "example_ja": "長期的な計画が必要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "192",
+        "english": "Arctic",
+        "品詞": "形容詞",
+        "japanese": "北極の",
+        "派生語": "Arctic[名]北極",
+        "example_en": "The Arctic climate is severe.",
+        "example_ja": "北極の気候は厳しい。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "193",
+        "english": "minor",
+        "品詞": "形容詞",
+        "japanese": "小さい、重要でない",
+        "派生語": "minority[名]少数派",
+        "example_en": "It was a minor mistake.",
+        "example_ja": "それは小さなミスだった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "194",
+        "english": "risky",
+        "品詞": "形容詞",
+        "japanese": "危険な",
+        "派生語": "risk[名]危険",
+        "example_en": "Investing here is risky.",
+        "example_ja": "ここへの投資は危険だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "195",
+        "english": "complex",
+        "品詞": "形容詞",
+        "japanese": "複雑な",
+        "派生語": "complexity[名]複雑さ",
+        "example_en": "The system is extremely complex.",
+        "example_ja": "そのシステムは非常に複雑だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "196",
+        "english": "competitive",
+        "品詞": "形容詞",
+        "japanese": "競争の激しい",
+        "派生語": "competition[名]競争",
+        "example_en": "The market is highly competitive.",
+        "example_ja": "その市場は非常に競争が激しい。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "197",
+        "english": "immediate",
+        "品詞": "形容詞",
+        "japanese": "即時の、直接の",
+        "派生語": "immediately[副]すぐに",
+        "example_en": "Immediate action was required.",
+        "example_ja": "即時の対応が必要だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "198",
+        "english": "religious",
+        "品詞": "形容詞",
+        "japanese": "宗教の",
+        "派生語": "religion[名]宗教",
+        "example_en": "Religious freedom is protected.",
+        "example_ja": "宗教の自由は守られている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "199",
+        "english": "related",
+        "品詞": "形容詞",
+        "japanese": "関連した",
+        "派生語": "relate[動]関連づける",
+        "example_en": "The issues are closely related.",
+        "example_ja": "それらの問題は密接に関連している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "2",
+        "no": "200",
+        "english": "affordable",
+        "品詞": "形容詞",
+        "japanese": "手頃な価格の",
+        "派生語": "afford[動]余裕がある",
+        "example_en": "The housing is affordable now.",
+        "example_ja": "その住宅は今は手頃な価格だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "201",
+        "english": "donate",
+        "品詞": "動詞",
+        "japanese": "を寄付する、提供する",
+        "派生語": "donation[名]寄付、donor[名]寄付者",
+        "example_en": "Many people donated money to charity.",
+        "example_ja": "多くの人が慈善団体にお金を寄付した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "202",
+        "english": "lessen",
+        "品詞": "動詞",
+        "japanese": "を減らす、和らげる",
+        "派生語": "less[形]より少ない",
+        "example_en": "The medicine lessened his pain.",
+        "example_ja": "その薬は彼の痛みを和らげた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "203",
+        "english": "manufacture",
+        "品詞": "動詞",
+        "japanese": "を製造する",
+        "派生語": "manufacture[名]製造、manufacturer[名]製造業者",
+        "example_en": "The factory manufactures electronic devices.",
+        "example_ja": "その工場は電子機器を製造している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "204",
+        "english": "commute",
+        "品詞": "動詞",
+        "japanese": "通勤する",
+        "派生語": "commuter[名]通勤者",
+        "example_en": "She commutes to work by train.",
+        "example_ja": "彼女は電車で通勤している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "205",
+        "english": "exaggerate",
+        "品詞": "動詞",
+        "japanese": "を誇張する",
+        "派生語": "exaggeration[名]誇張",
+        "example_en": "He exaggerated the importance of his role.",
+        "example_ja": "彼は自分の役割の重要性を誇張した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "206",
+        "english": "suspect",
+        "品詞": "動詞",
+        "japanese": "を疑う",
+        "派生語": "suspect[名]容疑者",
+        "example_en": "The police suspected him of theft.",
+        "example_ja": "警察は彼を窃盗の疑いで疑った。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "207",
+        "english": "acquire",
+        "品詞": "動詞",
+        "japanese": "を得る、習得する",
+        "派生語": "acquisition[名]取得",
+        "example_en": "She acquired new skills abroad.",
+        "example_ja": "彼女は海外で新しい技能を身につけた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "208",
+        "english": "reintroduce",
+        "品詞": "動詞",
+        "japanese": "を再導入する",
+        "派生語": "reintroduction[名]再導入",
+        "example_en": "The species was reintroduced to the area.",
+        "example_ja": "その種はその地域に再導入された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "209",
+        "english": "reschedule",
+        "品詞": "動詞",
+        "japanese": "予定を変更する",
+        "派生語": "schedule[名]予定",
+        "example_en": "The meeting was rescheduled for Friday.",
+        "example_ja": "会議は金曜日に変更された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "210",
+        "english": "adapt",
+        "品詞": "動詞",
+        "japanese": "適応する、順応する",
+        "派生語": "adaptation[名]適応",
+        "example_en": "Animals adapt to environmental changes.",
+        "example_ja": "動物は環境の変化に適応する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "211",
+        "english": "generate",
+        "品詞": "動詞",
+        "japanese": "を生み出す、発生させる",
+        "派生語": "generation[名]発生、世代",
+        "example_en": "The plant generates electricity.",
+        "example_ja": "その施設は電力を生み出す。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "212",
+        "english": "guarantee",
+        "品詞": "動詞",
+        "japanese": "を保証する",
+        "派生語": "guarantee[名]保証",
+        "example_en": "This product guarantees quality.",
+        "example_ja": "この製品は品質を保証している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "213",
+        "english": "dump",
+        "品詞": "動詞",
+        "japanese": "を投棄する、捨てる",
+        "派生語": "dump[名]投棄場",
+        "example_en": "Illegal dumping harms the environment.",
+        "example_ja": "不法投棄は環境を害する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "214",
+        "english": "update",
+        "品詞": "動詞",
+        "japanese": "を更新する",
+        "派生語": "update[名]更新",
+        "example_en": "Please update the software regularly.",
+        "example_ja": "ソフトウェアを定期的に更新してください。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "215",
+        "english": "classify",
+        "品詞": "動詞",
+        "japanese": "を分類する",
+        "派生語": "classification[名]分類",
+        "example_en": "The data was classified by type.",
+        "example_ja": "データは種類別に分類された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "216",
+        "english": "acknowledge",
+        "品詞": "動詞",
+        "japanese": "を認める、感謝する",
+        "派生語": "acknowledgment[名]認識",
+        "example_en": "She acknowledged her mistake openly.",
+        "example_ja": "彼女は自分の誤りを率直に認めた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "217",
+        "english": "enforce",
+        "品詞": "動詞",
+        "japanese": "を施行する、強制する",
+        "派生語": "enforcement[名]施行",
+        "example_en": "The law is strictly enforced.",
+        "example_ja": "その法律は厳格に施行されている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "218",
+        "english": "renew",
+        "品詞": "動詞",
+        "japanese": "を更新する、再開する",
+        "派生語": "renewal[名]更新",
+        "example_en": "They renewed their contract.",
+        "example_ja": "彼らは契約を更新した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "219",
+        "english": "overlook",
+        "品詞": "動詞",
+        "japanese": "を見落とす、見渡す",
+        "派生語": "overlook[名]見落とし",
+        "example_en": "He overlooked an important detail.",
+        "example_ja": "彼は重要な点を見落とした。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "220",
+        "english": "evaluate",
+        "品詞": "動詞",
+        "japanese": "を評価する",
+        "派生語": "evaluation[名]評価",
+        "example_en": "The teacher evaluated the students fairly.",
+        "example_ja": "教師は生徒を公平に評価した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "221",
+        "english": "commit",
+        "品詞": "動詞",
+        "japanese": "を犯す、専念する",
+        "派生語": "commitment[名]責任、専念",
+        "example_en": "He committed a serious error.",
+        "example_ja": "彼は重大な誤りを犯した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "222",
+        "english": "argument",
+        "品詞": "名詞",
+        "japanese": "議論、主張",
+        "派生語": "argue[動]議論する",
+        "example_en": "The argument lasted for hours.",
+        "example_ja": "その議論は何時間も続いた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "223",
+        "english": "archaeologist",
+        "品詞": "名詞",
+        "japanese": "考古学者",
+        "派生語": "archaeology[名]考古学",
+        "example_en": "The archaeologist studied ancient ruins.",
+        "example_ja": "考古学者は古代遺跡を研究した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "224",
+        "english": "reputation",
+        "品詞": "名詞",
+        "japanese": "評判、名声",
+        "派生語": "reputable[形]評判の良い",
+        "example_en": "The company has a good reputation.",
+        "example_ja": "その会社は良い評判を持っている。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "225",
+        "english": "fossil",
+        "品詞": "名詞",
+        "japanese": "化石",
+        "派生語": "fossilize[動]化石化する",
+        "example_en": "The fossil was millions of years old.",
+        "example_ja": "その化石は数百万年前のものだった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "226",
+        "english": "status",
+        "品詞": "名詞",
+        "japanese": "地位、状態",
+        "派生語": "status[形]地位の",
+        "example_en": "Social status affects opportunities.",
+        "example_ja": "社会的地位は機会に影響する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "227",
+        "english": "contrast",
+        "品詞": "名詞",
+        "japanese": "対照、差",
+        "派生語": "contrast[動]対照する",
+        "example_en": "The contrast between cultures is clear.",
+        "example_ja": "文化の違いは明らかだ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "228",
+        "english": "workplace",
+        "品詞": "名詞",
+        "japanese": "職場",
+        "派生語": "workplace[形]職場の",
+        "example_en": "Safety is important in the workplace.",
+        "example_ja": "職場では安全が重要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "229",
+        "english": "equality",
+        "品詞": "名詞",
+        "japanese": "平等",
+        "派生語": "equal[形]平等な",
+        "example_en": "Gender equality is essential.",
+        "example_ja": "男女平等は不可欠だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "230",
+        "english": "colleague",
+        "品詞": "名詞",
+        "japanese": "同僚",
+        "派生語": "collegial[形]同僚の",
+        "example_en": "My colleagues supported my idea.",
+        "example_ja": "同僚たちは私の考えを支持した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "231",
+        "english": "assistance",
+        "品詞": "名詞",
+        "japanese": "援助、支援",
+        "派生語": "assist[動]援助する",
+        "example_en": "They offered financial assistance.",
+        "example_ja": "彼らは金銭的支援を提供した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "232",
+        "english": "luxury",
+        "品詞": "名詞",
+        "japanese": "ぜいたく品、ぜいたく",
+        "派生語": "luxurious[形]ぜいたくな",
+        "example_en": "A car is a luxury for him.",
+        "example_ja": "彼にとって車はぜいたくだ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "233",
+        "english": "outbreak",
+        "品詞": "名詞",
+        "japanese": "発生、勃発",
+        "派生語": "break out[句]勃発する",
+        "example_en": "The outbreak of disease spread quickly.",
+        "example_ja": "病気の発生は急速に広がった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "234",
+        "english": "council",
+        "品詞": "名詞",
+        "japanese": "評議会、議会",
+        "派生語": "councilor[名]評議員",
+        "example_en": "The city council approved the plan.",
+        "example_ja": "市議会はその計画を承認した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "235",
+        "english": "pottery",
+        "品詞": "名詞",
+        "japanese": "陶器",
+        "派生語": "potter[名]陶芸家",
+        "example_en": "Ancient pottery was discovered.",
+        "example_ja": "古代の陶器が発見された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "236",
+        "english": "assignment",
+        "品詞": "名詞",
+        "japanese": "課題、任務",
+        "派生語": "assign[動]割り当てる",
+        "example_en": "The assignment is due tomorrow.",
+        "example_ja": "課題の提出期限は明日だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "237",
+        "english": "particle",
+        "品詞": "名詞",
+        "japanese": "粒子",
+        "派生語": "particle[形]粒子の",
+        "example_en": "Particles move rapidly at high temperatures.",
+        "example_ja": "高温では粒子が速く動く。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "238",
+        "english": "radiation",
+        "品詞": "名詞",
+        "japanese": "放射線",
+        "派生語": "radiate[動]放射する",
+        "example_en": "Radiation can be dangerous.",
+        "example_ja": "放射線は危険になりうる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "239",
+        "english": "priority",
+        "品詞": "名詞",
+        "japanese": "優先事項",
+        "派生語": "prioritize[動]優先する",
+        "example_en": "Safety is our top priority.",
+        "example_ja": "安全が最優先事項だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "240",
+        "english": "content",
+        "品詞": "名詞",
+        "japanese": "内容、目次",
+        "派生語": "content[形]満足した",
+        "example_en": "The content of the report was detailed.",
+        "example_ja": "報告書の内容は詳細だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "241",
+        "english": "destination",
+        "品詞": "名詞",
+        "japanese": "目的地",
+        "派生語": "destine[動]運命づける",
+        "example_en": "The destination was unknown.",
+        "example_ja": "目的地は不明だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "242",
+        "english": "mine",
+        "品詞": "名詞",
+        "japanese": "鉱山",
+        "派生語": "mine[動]採掘する",
+        "example_en": "The mine produces gold.",
+        "example_ja": "その鉱山は金を産出する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "243",
+        "english": "injury",
+        "品詞": "名詞",
+        "japanese": "けが、負傷",
+        "派生語": "injure[動]傷つける",
+        "example_en": "He recovered from his injury.",
+        "example_ja": "彼はけがから回復した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "244",
+        "english": "lottery",
+        "品詞": "名詞",
+        "japanese": "宝くじ",
+        "派生語": "lottery[形]宝くじの",
+        "example_en": "She won the lottery unexpectedly.",
+        "example_ja": "彼女は思いがけず宝くじに当たった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "245",
+        "english": "feature",
+        "品詞": "名詞",
+        "japanese": "特徴、特集",
+        "派生語": "feature[動]特集する",
+        "example_en": "This phone has many useful features.",
+        "example_ja": "この携帯には多くの便利な機能がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "246",
+        "english": "labor",
+        "品詞": "名詞",
+        "japanese": "労働、労力",
+        "派生語": "labor[動]働く",
+        "example_en": "Labor costs increased recently.",
+        "example_ja": "最近、労働コストが上がった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "247",
+        "english": "diabetes",
+        "品詞": "名詞",
+        "japanese": "糖尿病",
+        "派生語": "diabetic[名]糖尿病患者",
+        "example_en": "Diabetes requires careful management.",
+        "example_ja": "糖尿病には慎重な管理が必要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "248",
+        "english": "bulb",
+        "品詞": "名詞",
+        "japanese": "電球、球根",
+        "派生語": "bulb[形]球根の",
+        "example_en": "The bulb needs replacing.",
+        "example_ja": "電球を交換する必要がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "249",
+        "english": "résumé",
+        "品詞": "名詞",
+        "japanese": "履歴書",
+        "派生語": "resume[動]再開する",
+        "example_en": "She submitted her résumé online.",
+        "example_ja": "彼女はオンラインで履歴書を提出した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "250",
+        "english": "mud",
+        "品詞": "名詞",
+        "japanese": "泥",
+        "派生語": "muddy[形]泥だらけの",
+        "example_en": "The road was covered with mud.",
+        "example_ja": "道路は泥で覆われていた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "251",
+        "english": "psychology",
+        "品詞": "名詞",
+        "japanese": "心理学",
+        "派生語": "psychological[形]心理の",
+        "example_en": "Psychology helps understand behavior.",
+        "example_ja": "心理学は行動理解に役立つ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "252",
+        "english": "corporation",
+        "品詞": "名詞",
+        "japanese": "企業、法人",
+        "派生語": "corporate[形]企業の",
+        "example_en": "The corporation expanded overseas.",
+        "example_ja": "その企業は海外に拡大した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "253",
+        "english": "ecosystem",
+        "品詞": "名詞",
+        "japanese": "生態系",
+        "派生語": "ecological[形]生態の",
+        "example_en": "The ecosystem is fragile.",
+        "example_ja": "その生態系は壊れやすい。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "254",
+        "english": "promotion",
+        "品詞": "名詞",
+        "japanese": "昇進、促進",
+        "派生語": "promote[動]昇進させる",
+        "example_en": "He received a promotion at work.",
+        "example_ja": "彼は職場で昇進した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "255",
+        "english": "administration",
+        "品詞": "名詞",
+        "japanese": "運営、行政",
+        "派生語": "administer[動]運営する",
+        "example_en": "The administration changed policies.",
+        "example_ja": "政権は政策を変更した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "256",
+        "english": "complaint",
+        "品詞": "名詞",
+        "japanese": "苦情、不満",
+        "派生語": "complain[動]苦情を言う",
+        "example_en": "The customer filed a complaint.",
+        "example_ja": "客は苦情を申し立てた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "257",
+        "english": "debt",
+        "品詞": "名詞",
+        "japanese": "借金、負債",
+        "派生語": "debtor[名]債務者",
+        "example_en": "He paid off his debt.",
+        "example_ja": "彼は借金を完済した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "258",
+        "english": "requirement",
+        "品詞": "名詞",
+        "japanese": "必要条件",
+        "派生語": "require[動]必要とする",
+        "example_en": "Experience is a basic requirement.",
+        "example_ja": "経験は基本的な条件だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "259",
+        "english": "workforce",
+        "品詞": "名詞",
+        "japanese": "労働力",
+        "派生語": "workforce[形]労働力の",
+        "example_en": "The workforce is aging.",
+        "example_ja": "労働力は高齢化している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "260",
+        "english": "preference",
+        "品詞": "名詞",
+        "japanese": "好み、優先",
+        "派生語": "prefer[動]好む",
+        "example_en": "I have a preference for tea.",
+        "example_ja": "私は紅茶が好きだ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "261",
+        "english": "refugee",
+        "品詞": "名詞",
+        "japanese": "難民",
+        "派生語": "refuge[名]避難",
+        "example_en": "Many refugees fled the war.",
+        "example_ja": "多くの難民が戦争から逃れた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "262",
+        "english": "inhabitant",
+        "品詞": "名詞",
+        "japanese": "住民",
+        "派生語": "inhabit[動]住む",
+        "example_en": "The inhabitants welcomed visitors.",
+        "example_ja": "住民は訪問者を歓迎した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "263",
+        "english": "subscription",
+        "品詞": "名詞",
+        "japanese": "購読、会員登録",
+        "派生語": "subscribe[動]購読する",
+        "example_en": "I canceled my subscription.",
+        "example_ja": "私は購読を解約した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "264",
+        "english": "recipient",
+        "品詞": "名詞",
+        "japanese": "受取人、受領者",
+        "派生語": "receive[動]受け取る",
+        "example_en": "The recipient thanked the donor.",
+        "example_ja": "受取人は寄付者に感謝した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "265",
+        "english": "shift",
+        "品詞": "名詞",
+        "japanese": "変化、勤務時間帯",
+        "派生語": "shift[動]移動する",
+        "example_en": "Night shift starts at ten.",
+        "example_ja": "夜勤は10時に始まる。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "266",
+        "english": "vessel",
+        "品詞": "名詞",
+        "japanese": "船舶、血管",
+        "派生語": "vessel[形]船の",
+        "example_en": "The vessel crossed the ocean.",
+        "example_ja": "船は海を横断した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "267",
+        "english": "ingredient",
+        "品詞": "名詞",
+        "japanese": "材料、成分",
+        "派生語": "ingredient[形]成分の",
+        "example_en": "Fresh ingredients improve taste.",
+        "example_ja": "新鮮な材料は味を良くする。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "268",
+        "english": "qualified",
+        "品詞": "形容詞",
+        "japanese": "資格のある、適任の",
+        "派生語": "qualify[動]資格を与える",
+        "example_en": "She is qualified for the position.",
+        "example_ja": "彼女はその職に適任だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "269",
+        "english": "widespread",
+        "品詞": "形容詞",
+        "japanese": "広く普及した",
+        "派生語": "spread[動]広がる",
+        "example_en": "The disease became widespread.",
+        "example_ja": "その病気は広く蔓延した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "270",
+        "english": "alternative",
+        "品詞": "形容詞",
+        "japanese": "代替の、別の",
+        "派生語": "alternative[名]代案",
+        "example_en": "We need an alternative plan.",
+        "example_ja": "別の計画が必要だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "271",
+        "english": "harsh",
+        "品詞": "形容詞",
+        "japanese": "厳しい、過酷な",
+        "派生語": "harshly[副]厳しく",
+        "example_en": "The region has a harsh climate.",
+        "example_ja": "その地域は厳しい気候だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "272",
+        "english": "enormous",
+        "品詞": "形容詞",
+        "japanese": "巨大な、莫大な",
+        "派生語": "enormously[副]非常に",
+        "example_en": "The project required enormous effort.",
+        "example_ja": "その計画には莫大な努力が必要だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "273",
+        "english": "specific",
+        "品詞": "形容詞",
+        "japanese": "特定の、明確な",
+        "派生語": "specifically[副]特に",
+        "example_en": "Please give specific examples.",
+        "example_ja": "具体的な例を挙げてください。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "274",
+        "english": "artificial",
+        "品詞": "形容詞",
+        "japanese": "人工の",
+        "派生語": "artificially[副]人工的に",
+        "example_en": "Artificial intelligence is advancing rapidly.",
+        "example_ja": "人工知能は急速に進歩している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "275",
+        "english": "toxic",
+        "品詞": "形容詞",
+        "japanese": "有毒な",
+        "派生語": "toxicity[名]毒性",
+        "example_en": "Toxic chemicals were removed.",
+        "example_ja": "有毒な化学物質が除去された。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "276",
+        "english": "flexible",
+        "品詞": "形容詞",
+        "japanese": "柔軟な、融通の利く",
+        "派生語": "flexibility[名]柔軟性",
+        "example_en": "The schedule is flexible.",
+        "example_ja": "その予定は柔軟だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "277",
+        "english": "latest",
+        "品詞": "形容詞",
+        "japanese": "最新の",
+        "派生語": "late[形]遅い",
+        "example_en": "The latest model is popular.",
+        "example_ja": "最新モデルは人気だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "278",
+        "english": "former",
+        "品詞": "形容詞",
+        "japanese": "以前の、元の",
+        "派生語": "form[動]形作る",
+        "example_en": "The former president attended.",
+        "example_ja": "元大統領が出席した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "279",
+        "english": "capable",
+        "品詞": "形容詞",
+        "japanese": "能力がある",
+        "派生語": "capability[名]能力",
+        "example_en": "She is capable of leadership.",
+        "example_ja": "彼女には指導力がある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "280",
+        "english": "practical",
+        "品詞": "形容詞",
+        "japanese": "実用的な",
+        "派生語": "practically[副]実質的に",
+        "example_en": "This advice is practical.",
+        "example_ja": "この助言は実用的だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "281",
+        "english": "mechanical",
+        "品詞": "形容詞",
+        "japanese": "機械の",
+        "派生語": "mechanically[副]機械的に",
+        "example_en": "Mechanical failure caused delay.",
+        "example_ja": "機械的故障が遅延を招いた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "282",
+        "english": "federal",
+        "品詞": "形容詞",
+        "japanese": "連邦の",
+        "派生語": "federation[名]連邦",
+        "example_en": "The federal government responded.",
+        "example_ja": "連邦政府が対応した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "283",
+        "english": "aggressive",
+        "品詞": "形容詞",
+        "japanese": "攻撃的な、積極的な",
+        "派生語": "aggression[名]攻撃性",
+        "example_en": "His aggressive attitude caused conflict.",
+        "example_ja": "彼の攻撃的態度は対立を生んだ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "284",
+        "english": "adequate",
+        "品詞": "形容詞",
+        "japanese": "十分な、適切な",
+        "派生語": "adequately[副]十分に",
+        "example_en": "The supply is adequate.",
+        "example_ja": "供給は十分だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "285",
+        "english": "unexpected",
+        "品詞": "形容詞",
+        "japanese": "予期しない",
+        "派生語": "unexpectedly[副]予期せず",
+        "example_en": "Unexpected results surprised researchers.",
+        "example_ja": "予期しない結果が研究者を驚かせた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "286",
+        "english": "attractive",
+        "品詞": "形容詞",
+        "japanese": "魅力的な",
+        "派生語": "attraction[名]魅力",
+        "example_en": "The offer is attractive.",
+        "example_ja": "その提案は魅力的だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "287",
+        "english": "sufficient",
+        "品詞": "形容詞",
+        "japanese": "十分な",
+        "派生語": "sufficiency[名]十分さ",
+        "example_en": "The evidence is sufficient.",
+        "example_ja": "証拠は十分だ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "288",
+        "english": "costly",
+        "品詞": "形容詞",
+        "japanese": "高価な",
+        "派生語": "cost[名]費用",
+        "example_en": "The repair was costly.",
+        "example_ja": "修理は高額だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "289",
+        "english": "eventually",
+        "品詞": "副詞",
+        "japanese": "最終的に",
+        "派生語": "eventual[形]最終的な",
+        "example_en": "Eventually, they reached agreement.",
+        "example_ja": "最終的に彼らは合意に達した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "290",
+        "english": "otherwise",
+        "品詞": "副詞",
+        "japanese": "さもなければ、別の方法で",
+        "派生語": "otherwise[形]別の",
+        "example_en": "Study hard, otherwise you may fail.",
+        "example_ja": "一生懸命勉強しなさい、さもないと失敗する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "291",
+        "english": "previously",
+        "品詞": "副詞",
+        "japanese": "以前に",
+        "派生語": "previous[形]以前の",
+        "example_en": "The data was previously unknown.",
+        "example_ja": "そのデータは以前は未知だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "292",
+        "english": "relatively",
+        "品詞": "副詞",
+        "japanese": "比較的に",
+        "派生語": "relative[形]相対的な",
+        "example_en": "The task was relatively easy.",
+        "example_ja": "その作業は比較的簡単だった。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "293",
+        "english": "consequently",
+        "品詞": "副詞",
+        "japanese": "その結果として",
+        "派生語": "consequence[名]結果",
+        "example_en": "He missed the train; consequently, he was late.",
+        "example_ja": "彼は電車に乗り遅れ、その結果遅刻した。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "294",
+        "english": "constantly",
+        "品詞": "副詞",
+        "japanese": "絶えず",
+        "派生語": "constant[形]一定の",
+        "example_en": "Technology is constantly evolving.",
+        "example_ja": "技術は絶えず進化している。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "295",
+        "english": "typically",
+        "品詞": "副詞",
+        "japanese": "通常は",
+        "派生語": "typical[形]典型的な",
+        "example_en": "The disease typically affects elderly people.",
+        "example_ja": "その病気は通常高齢者に影響する。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "296",
+        "english": "barely",
+        "品詞": "副詞",
+        "japanese": "ほとんど〜ない",
+        "派生語": "bare[形]裸の",
+        "example_en": "He barely survived the accident.",
+        "example_ja": "彼はかろうじて事故を生き延びた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "297",
+        "english": "despite",
+        "品詞": "前置詞",
+        "japanese": "〜にもかかわらず",
+        "派生語": "despite[前]〜にもかかわらず",
+        "example_en": "Despite the rain, we continued.",
+        "example_ja": "雨にもかかわらず、私たちは続けた。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "298",
+        "english": "per",
+        "品詞": "前置詞",
+        "japanese": "〜につき、〜ごとに",
+        "派生語": "per[前]〜につき",
+        "example_en": "The cost is ten dollars per person.",
+        "example_ja": "費用は1人につき10ドルだ。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "299",
+        "english": "beneath",
+        "品詞": "前置詞",
+        "japanese": "〜の下に、〜に値しない",
+        "派生語": "beneath[前]〜の下に",
+        "example_en": "The village lies beneath the mountain.",
+        "example_ja": "その村は山のふもとにある。"
+    },
+    {
+        "category": "A_basic",
+        "section": "3",
+        "no": "300",
+        "english": "whereas",
+        "品詞": "接続詞",
+        "japanese": "一方で、〜なのに",
+        "派生語": "whereas[接]一方で",
+        "example_en": "He is rich, whereas she is poor.",
+        "example_ja": "彼は裕福だが、一方で彼女は貧しい。"
+    }
+];
+// ############################
+//   単語帳データ定義【終了】
+// ############################
+
+let learnedData = {};
+let showOnlyUnlearned = false;
+
+// fetch('words_section1.json')
+// .then(res => res.json())
+// .then(data => {
+//   allWords = data;
+
+
+  showSectionList();
+// });
+
+function showSectionList() {
+  currentSection = null;
+  document.getElementById('header').textContent = '英検準1級 単語学習';
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  // ===== 全体進捗計算 =====
+  const totalWords = allWords.length;
+  let totalLearned = 0;
+
+  const sections = [...new Set(allWords.map(w => w.section))];
+
+  sections.forEach(sec => {
+    const key = `eiken2_section_${sec}`;
+    const learned = JSON.parse(localStorage.getItem(key) || '{}');
+
+    totalLearned += Object.values(learned)
+      .filter(v => typeof v === 'string').length;
+  });
+
+  const totalPercent = Math.round((totalLearned / totalWords) * 100);
+  const totalDiv = document.createElement('div');
+  totalDiv.className = 'item';
+  totalDiv.style.background = '#e3f2fd';
+  let totalBarColor = '#4fc3f7'; // 初期：水色
+  if (totalPercent >= 80) totalBarColor = '#66bb6a';   // 緑
+  else if (totalPercent >= 50) totalBarColor = '#ffa726'; // オレンジ
+
+  totalDiv.innerHTML = `
+    <strong>📊 全体進捗</strong>
+    <div class="progress">
+      ${totalLearned} / ${totalWords}（${totalPercent}%）
+    </div>
+    <div class="progress-bar">
+      <div class="progress-bar-inner"
+        style="width:${totalPercent}%; background:${totalBarColor}">
+      </div>
+    </div>
+  `;
+  list.appendChild(totalDiv);
+
+  sections.forEach(sec => {
+    const key = `eiken2_section_${sec}`;
+    const learned = JSON.parse(localStorage.getItem(key) || '{}');
+    const wordsInSection = allWords.filter(w => w.section === sec);
+    
+    // 単語番号の範囲を計算
+    const numbers = wordsInSection.map(w => Number(w.no));
+    const minNo = Math.min(...numbers);
+    const maxNo = Math.max(...numbers);
+
+    const categories = wordsInSection.map(w => w.category);
+    let sectionClass = 'A_basic';
+    if (categories.includes('C_advanced')) sectionClass = 'C_advanced';
+    else if (categories.includes('B_important') || categories.includes('B_phrase'))
+      sectionClass = 'B_important';
+        
+    const learnedCount = Object.values(learned)
+      .filter(v => typeof v === 'string').length;
+    const percent = Math.round((learnedCount / wordsInSection.length) * 100);
+    
+    let barColor = '#4fc3f7';
+    if (percent >= 80) barColor = '#66bb6a';
+    else if (percent >= 50) barColor = '#ffa726';
+    
+    const div = document.createElement('div');
+    div.className = `item ${sectionClass}`;
+    div.innerHTML = `
+      <strong>
+        Section ${sec}
+        <span style="font-size:12px; color:#666;">
+          （No.${minNo}〜${maxNo}）
+        </span>
+      </strong>
+      <div class="progress">
+        進捗 ${learnedCount} / ${wordsInSection.length}（${percent}%）
+      </div>
+      <div class="progress-bar">
+        <div class="progress-bar-inner"
+          style="width:${percent}%; background:${barColor}">
+        </div>
+      </div>
+    `;
+   
+    div.onclick = () => showWordList(sec);
+    list.appendChild(div);
+  });
+}
+
+function showWordList(section) {
+  if (!allWords.length) return;
+  currentSection = section;
+  const key = `eiken2_section_${section}`;
+  learnedData = JSON.parse(localStorage.getItem(key) || '{}');
+
+  const today = todayStr();
+  const wordsInSection = allWords.filter(w => w.section === section);
+  const learnedCount = Object.values(learnedData)
+    .filter(v => typeof v === 'string').length;
+  const percent = Math.round((learnedCount / wordsInSection.length) * 100);
+  let barColor = '#4fc3f7'; // 初期：水色
+  if (percent >= 80) barColor = '#66bb6a';   // 緑
+  else if (percent >= 50) barColor = '#ffa726'; // オレンジ
+
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  document.getElementById('header').innerHTML = `
+    <span class="back" onclick="showSectionList()">← 戻る</span>
+    Section ${section}
+    <div class="progress">
+      進捗 ${learnedCount} / ${wordsInSection.length}（${percent}%）
+    </div>
+    <div class="progress-bar">
+    <div class="progress-bar-inner"
+      style="width:${percent}%; background:${barColor}">
+    </div>
+    </div>
+    <div style="font-size:12px; margin-top:4px;">
+      今日覚えた数：<span id="todayCount">0</span>
+    </div>
+    <label style="font-size:12px; margin-left:10px;">
+      <input type="checkbox" id="filterUnlearned"
+        ${showOnlyUnlearned ? 'checked' : ''}>
+      未習得のみ
+    </label>
+    <button style="margin-left:10px; font-size:12px;"
+      onclick="resetSection('${section}')">
+      全リセット
+    </button>
+    <button style="margin-left:6px; font-size:12px;"
+      onclick="resetToday('${section}')">
+      今日分リセット
+    </button>
+  `;
+
+
+  allWords
+    .filter(w => w.section === section)
+    .filter(w => {
+      if (!showOnlyUnlearned) return true;
+      return !learnedData[w.english];
+    })
+    .forEach(w => {
+    const div = document.createElement('div');
+    div.className = `item word ${w.category}`;
+    if (learnedData[w.english]) div.classList.add('learned');
+
+    div.innerHTML = `
+      <div style="font-size:12px; color:#888;">
+        No.${w.no}
+	<span style="margin-left:6px; font-size:11px; color:#777;">
+	  ${w.品詞}
+	</span>
+      </div>
+      <strong>${w.english}</strong>
+      <div class="meaning">
+	<div>${w.japanese}</div>
+	${w.派生語 ? `
+	  <div style="margin-top:6px; font-size:13px; color:#555;">
+	    <strong>派生語：</strong>${w.派生語}
+	  </div>
+        ` : ''}
+      </div>
+      
+      ${w.example_en && w.example_en.trim() ? `
+        <button class="example-btn" style="display:none;">例文</button>
+        <div class="example" style="display:none;">
+          <div class="example-en">${w.example_en}</div>
+          <div class="example-ja">${w.example_ja}</div>
+        </div>
+      ` : ''}
+      
+      <button class="learned-btn">
+        ${learnedData[w.english] ? '覚えた✔' : '覚えた'}
+      </button>
+    `;
+
+    div.addEventListener('click', () => {
+      const meaning = div.querySelector('.meaning');
+      const exampleBtn = div.querySelector('.example-btn');
+      const example = div.querySelector('.example');
+    
+      const isOpen = meaning.style.display === 'block';
+    
+      // 意味の表示切替
+      meaning.style.display = isOpen ? 'none' : 'block';
+    
+      // 例文ボタンは「意味が表示されたときだけ」
+      if (exampleBtn) {
+        exampleBtn.style.display = isOpen ? 'none' : 'inline-block';
+      }
+    
+      // 意味を閉じたら例文も閉じる
+      if (example) {
+        example.style.display = 'none';
+      }
+    });
+    
+    const exampleBtn = div.querySelector('.example-btn');
+    if (exampleBtn) {
+      exampleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ex = div.querySelector('.example');
+        ex.style.display =
+          ex.style.display === 'block' ? 'none' : 'block';
+      });
+    }
+    
+    div.querySelector('.learned-btn').onclick = (e) => {
+      e.stopPropagation();
+    
+      if (learnedData[w.english]) {
+        // 覚えている → 解除
+        delete learnedData[w.english];
+        div.classList.remove('learned');
+        e.target.textContent = '覚えた';
+      } else {
+        // 覚えていない → 覚えた
+        learnedData[w.english] = todayStr();
+        div.classList.add('learned');
+        e.target.textContent = '覚えた✔';
+      }
+    
+      localStorage.setItem(key, JSON.stringify(learnedData));
+      updateTodayCount();
+      updateSectionProgress(currentSection);
+      
+      if (showOnlyUnlearned) {
+        showWordList(currentSection);
+      }      
+    };
+
+    list.appendChild(div);
+  });
+  const checkbox = document.getElementById('filterUnlearned');
+  checkbox.onchange = () => {
+    showOnlyUnlearned = checkbox.checked;
+    showWordList(section);
+  };
+  updateTodayCount();
+}
+
+function resetSection(section) {
+  section = String(section);
+  const ok = confirm(`Section ${section} の「覚えた」をすべてリセットしますか？`);
+  if (!ok) return;
+
+  const key = `eiken2_section_${section}`;
+
+  // localStorage を削除
+  localStorage.removeItem(key);
+
+  // メモリ上のデータもクリア
+  learnedData = {};
+
+  // 画面を再描画
+  showWordList(section);
+}
+
+/* 今日の日付を取得 */
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+/* 今日覚えた分だけリセット */
+function resetToday(section) {
+  const today = todayStr();
+  const key = `eiken2_section_${section}`;
+
+  const data = JSON.parse(localStorage.getItem(key) || '{}');
+
+  const filtered = {};
+  Object.keys(data).forEach(word => {
+    if (data[word] !== today) {
+      filtered[word] = data[word];
+    }
+  });
+
+  localStorage.setItem(key, JSON.stringify(filtered));
+  learnedData = filtered;
+
+  showWordList(section);
+}
+/* 今日覚えた数を更新 */
+function updateTodayCount() {
+  const today = todayStr();
+  const count = Object.values(learnedData)
+    .filter(d => d === today).length;
+
+  const span = document.getElementById('todayCount');
+  if (span) span.textContent = count;
+}
+/* 進捗更新関数 */
+function updateSectionProgress(section) {
+  const wordsInSection = allWords.filter(w => w.section === section);
+  const learnedCount = Object.values(learnedData)
+    .filter(v => typeof v === 'string').length;
+  const percent = Math.round((learnedCount / wordsInSection.length) * 100);
+
+  let barColor = '#4fc3f7';
+  if (percent >= 80) barColor = '#66bb6a';
+  else if (percent >= 50) barColor = '#ffa726';
+
+  // ヘッダー内の要素を書き換え
+  document.querySelector('#header .progress').innerHTML =
+    `進捗 ${learnedCount} / ${wordsInSection.length}（${percent}%）`;
+
+  const bar = document.querySelector('#header .progress-bar-inner');
+  bar.style.width = percent + '%';
+  bar.style.background = barColor;
+}
+
+</script>
+
+</body>
+</html>
+
