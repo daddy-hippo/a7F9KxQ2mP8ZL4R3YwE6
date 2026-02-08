@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>英検準１級単語-Ver.2</title>
+<title>英検準１級単語-Ver.3</title>
 <style>
 body { font-family: system-ui; margin:0; background:#f5f5f5; }
 header { background:#1e88e5; color:white; padding:14px; text-align:center; }
@@ -21506,6 +21506,29 @@ function renderTestScreen() {
           mode: s.mode
         });
       }
+			// ★追加：例文穴埋め（CLOZE）のときは「例文」と「例文訳」を表示
+			if ((s.mode === 'CLOZE' || s.type === 'cloze') &&
+			    ((q.rawExampleEn && q.rawExampleEn.trim()) || (q.extraJa && q.extraJa.trim()))) {
+
+			  const current = feedback.innerHTML || feedback.textContent || '';
+			  const rawEn = q.rawExampleEn ? q.rawExampleEn.trim() : '';
+			  const ja = q.extraJa ? q.extraJa.trim() : '';
+
+			  feedback.innerHTML = `
+			    ${current}
+			    <div style="margin-top:10px; padding:10px; background:#f0f4f8; border-radius:10px;">
+			      ${rawEn ? `
+			        <div style="font-size:12px; color:#666;">例文</div>
+			        <div style="margin-top:4px; font-weight:600;">${rawEn}</div>
+			      ` : ''}
+			      ${ja ? `
+			        <div style="font-size:12px; color:#666; margin-top:8px;">例文訳</div>
+			        <div style="margin-top:4px; color:#333;">${ja}</div>
+			      ` : ''}
+			    </div>
+			  `;
+			}
+
 			// ★ここで記録
 			recordAnswerToMistakes(s.section, q.word.english, chosen === correct);
 
@@ -21876,7 +21899,8 @@ function startClozeTest(section, numQuestions = 10) {
       prompt: sentence,           // renderTestScreenが表示する
       choices,
       correctIndex,
-      extraJa: word.example_ja || '' // 任意表示用（後で使える）
+      extraJa: word.example_ja || '', // 例文日本語訳
+			rawExampleEn: word.example_en || '' // ★穴なし例文
     };
   });
 
